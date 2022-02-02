@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  ##app:
+  ##  build: .
+  ##  container_name: "nest-expressas"
+  ##  entrypoint: bash -c "npm install && npm run start:dev"
+  ##  networks:
+  ##    - alphanetwork
+  ##  ports:
+  ##    - 3000:3000
+  ##  volumes:
+  ##    - .:/home/node/app
+
+  mongodb1:
+    image: mongo:latest
+    networks:
+      - alphanetwork
+    volumes:
+      - data1:/data/db
+      - config1:/data/configdb
+    ports:
+      - 30001:27017
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongodb2:
+    image: mongo:latest
+    networks:
+      - alphanetwork
+    ports:
+      - 30002:27017
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongodb3:
+    image: mongo:latest
+    networks:
+      - alphanetwork
+    ports:
+      - 30003:27017
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongoclient:
+    image: mongo
+    networks:
+      - alphanetwork
+    depends_on:
+      - mongodb1
+      - mongodb2
+      - mongodb3
+    volumes:
+      - .docker/mongo/deployment_scripts:/deployment_scripts
+    entrypoint:
+      - /deployment_scripts/initiate_replica.sh
+
+networks:
+  alphanetwork:
+
+volumes:
+  data1:
+  config1:  
